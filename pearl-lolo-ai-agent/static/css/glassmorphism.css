@@ -1,0 +1,262 @@
+/* Pearl Lolo AI Agent - Glassmorphism Theme */
+
+/* Global Styles */
+.stApp {
+    background: linear-gradient(135deg, 
+        rgba(210, 205, 189, 0.1) 0%, 
+        rgba(149, 179, 244, 0.1) 50%,
+        rgba(210, 205, 189, 0.05) 100%);
+    background-attachment: fixed;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* Glassmorphism Containers */
+.glass-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Sidebar Glass Effect */
+.css-1d391kg {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Chat Messages */
+.stChatMessage {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 15px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 15px !important;
+    margin: 5px 0 !important;
+}
+
+/* User Message Specific */
+.stChatMessage:has([data-testid="user-chat-message"]) {
+    background: rgba(149, 179, 244, 0.2) !important;
+    border: 1px solid rgba(149, 179, 244, 0.3) !important;
+}
+
+/* Assistant Message Specific */
+.stChatMessage:has([data-testid="assistant-chat-message"]) {
+    background: rgba(210, 205, 189, 0.2) !important;
+    border: 1px solid rgba(210, 205, 189, 0.3) !important;
+}
+
+/* Buttons */
+.stButton>button {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 15px !important;
+    color: #d2cdbd !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.stButton>button:hover {
+    background: rgba(210, 205, 189, 0.3) !important;
+    border: 1px solid #d2cdbd !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px 0 rgba(210, 205, 189, 0.3) !important;
+}
+
+/* Input Fields */
+.stTextInput>div>div>input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 15px !important;
+    color: white !important;
+    padding: 10px 15px !important;
+}
+
+.stTextInput>div>div>input:focus {
+    border: 1px solid #d2cdbd !important;
+    box-shadow: 0 0 0 1px #d2cdbd !important;
+}
+
+/* Select Boxes */
+.stSelectbox>div>div {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 15px !important;
+}
+
+/* Expanders */
+.streamlit-expanderHeader {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 15px !important;
+    margin: 5px 0 !important;
+}
+
+.streamlit-expanderContent {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 0 0 15px 15px !important;
+}
+
+/* Progress Bars */
+.stProgress > div > div > div {
+    background: linear-gradient(90deg, #d2cdbd 0%, #95b3f4 100%) !important;
+    border-radius: 10px !important;
+}
+
+/* Sliders */
+.stSlider>div>div>div {
+    background: linear-gradient(90deg, #d2cdbd 0%, #95b3f4 100%) !important;
+}
+
+/* Checkboxes */
+.stCheckbox>label {
+    color: #d2cdbd !important;
+    font-weight: 500 !important;
+}
+
+/* Radio Buttons */
+.stRadio>label {
+    color: #d2cdbd !important;
+    font-weight: 500 !important;
+}
+
+/* File Uploader */
+.stFileUploader>div {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+}
+
+/* RTL Support for Arabic */
+.rtl-text {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Segoe UI', 'Microsoft Sans Arabic', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.8;
+}
+
+.arabic-text {
+    font-family: 'Segoe UI', 'Microsoft Sans Arabic', 'Arial';
+    line-height: 1.8;
+    font-size: 16px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d2cdbd;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #95b3f4;
+}
+
+/* Animation for loading */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .glass-container {
+        padding: 15px;
+        margin: 5px 0;
+        border-radius: 10px;
+    }
+    
+    .stChatMessage {
+        padding: 10px !important;
+        border-radius: 10px !important;
+    }
+    
+    .stButton>button {
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* Code Blocks */
+.stCodeBlock {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Success, Warning, Error Messages */
+.stAlert {
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Info Boxes */
+.stInfo {
+    background: rgba(149, 179, 244, 0.2) !important;
+    border: 1px solid rgba(149, 179, 244, 0.3) !important;
+}
+
+/* Warning Boxes */
+.stWarning {
+    background: rgba(255, 193, 7, 0.2) !important;
+    border: 1px solid rgba(255, 193, 7, 0.3) !important;
+}
+
+/* Error Boxes */
+.stError {
+    background: rgba(244, 67, 54, 0.2) !important;
+    border: 1px solid rgba(244, 67, 54, 0.3) !important;
+}
+
+/* Success Boxes */
+.stSuccess {
+    background: rgba(76, 175, 80, 0.2) !important;
+    border: 1px solid rgba(76, 175, 80, 0.3) !important;
+}
