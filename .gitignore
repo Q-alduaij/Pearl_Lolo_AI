@@ -1,0 +1,15 @@
+# Pearl Lolo AI Agent ignores
+__pycache__/
+*.py[cod]
+*.log
+logs/
+.external/
+external/
+.env
+.venv/
+venv/
+.envrc
+.DS_Store
+.idea/
+.vscode/
+*.egg-info/

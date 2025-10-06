@@ -67,6 +67,14 @@ class ConfigManager:
                     'google': {
                         'api_key': '',
                         'model': 'gemini-pro'
+                    },
+                    'hrm': {
+                        'enabled': False,
+                        'base_url': 'http://localhost:8008',
+                        'default_task': 'sudoku',
+                        'timeout': 30,
+                        'health_endpoint': '/health',
+                        'check_health_on_startup': True
                     }
                 }
             },

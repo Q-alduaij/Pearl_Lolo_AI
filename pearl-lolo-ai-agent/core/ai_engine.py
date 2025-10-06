@@ -7,13 +7,15 @@ import os
 import logging
 from typing import Dict, List, Optional
 
+from .hrm_client import HRMClient, HRMClientError
+
 class AIEngine:
     def __init__(self, config_manager):
         self.config = config_manager
         self.logger = logging.getLogger(__name__)
         self.models = {}
         self.current_model = None
-        
+
         # Initialize model clients with error handling
         self.setup_clients()
     
@@ -21,6 +23,7 @@ class AIEngine:
         """Setup AI clients with proper error handling"""
         self.ollama_client = None
         self.anthropic_client = None
+        self.hrm_client = None
         
         try:
             # Ollama client
@@ -60,6 +63,33 @@ class AIEngine:
                 self.logger.info("Google AI client initialized")
         except Exception as e:
             self.logger.warning(f"Google AI setup failed: {e}")
+
+        try:
+            hrm_settings = self.config.get('ai.models.hrm', {})
+            if hrm_settings and hrm_settings.get('enabled', False):
+                base_url = hrm_settings.get('base_url', 'http://localhost:8008')
+                default_task = hrm_settings.get('default_task', 'sudoku')
+                timeout = int(hrm_settings.get('timeout', 30))
+                health_endpoint = hrm_settings.get('health_endpoint', '/health')
+
+                self.hrm_client = HRMClient(
+                    base_url=base_url,
+                    default_task=default_task,
+                    timeout=timeout,
+                    health_endpoint=health_endpoint,
+                    logger=self.logger,
+                )
+
+                if hrm_settings.get('check_health_on_startup', True):
+                    self.hrm_client.check_health()
+
+                self.logger.info("HRM client initialized")
+        except HRMClientError as exc:
+            self.hrm_client = None
+            self.logger.warning(f"HRM client disabled: {exc}")
+        except Exception as exc:
+            self.hrm_client = None
+            self.logger.warning(f"HRM setup failed: {exc}")
     
     def generate_response(self, 
                          prompt: str, 
@@ -76,7 +106,7 @@ class AIEngine:
         
         # Get model provider
         provider = self.config.get('ai.default_model', 'local')
-        
+
         try:
             if provider == 'local':
                 return self._generate_local(enhanced_prompt, max_tokens)
@@ -86,6 +116,12 @@ class AIEngine:
                 return self._generate_anthropic(enhanced_prompt, max_tokens)
             elif provider == 'google':
                 return self._generate_google(enhanced_prompt, max_tokens)
+            elif provider == 'hrm':
+                return self._generate_hrm(
+                    prompt,
+                    context=context,
+                    search_results=search_results,
+                )
             else:
                 return self._generate_fallback(enhanced_prompt)
                 
@@ -210,9 +246,43 @@ Context Information:
             response = model.generate_content(prompt)
             
             return response.text
-            
+
         except Exception as e:
             return f"❌ Google AI error: {str(e)}"
+
+    def _generate_hrm(
+        self,
+        prompt: str,
+        context: str = "",
+        search_results: str = "",
+    ) -> str:
+        """Generate a response using the Sapient HRM microservice."""
+
+        if not self.hrm_client:
+            return "❌ HRM service is not configured. Please enable it in config.yaml."
+
+        metadata: Dict[str, str] = {}
+        if context:
+            metadata['context'] = context
+        if search_results:
+            metadata['search_results'] = search_results
+
+        try:
+            response = self.hrm_client.solve(prompt, metadata=metadata or None)
+        except HRMClientError as exc:
+            self.logger.error(f"HRM request failed: {exc}")
+            return f"❌ HRM service error: {exc}"
+
+        formatted = self.hrm_client.format_response(response)
+
+        if not self.hrm_client.should_route(prompt):
+            return (
+                formatted
+                + "\n\n⚠️ The prompt did not match known HRM puzzle formats. "
+                "Please confirm the task or provide a structured grid."
+            )
+
+        return formatted
     
     def _generate_fallback(self, prompt: str) -> str:
         """Fallback response"""

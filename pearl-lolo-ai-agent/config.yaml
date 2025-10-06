@@ -26,6 +26,13 @@ ai:
     anthropic:
       api_key: ""
       model: "claude-2"
+    hrm:
+      enabled: false
+      base_url: "http://localhost:8008"
+      default_task: "sudoku"
+      timeout: 30
+      health_endpoint: "/health"
+      check_health_on_startup: true
 
 rag:
   enabled: true

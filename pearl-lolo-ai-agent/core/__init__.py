@@ -11,6 +11,7 @@ from .search_tool import SearchTool
 from .config_manager import ConfigManager
 from .bilingual_processor import BilingualProcessor
 from .personality_engine import PersonalityEngine
+from .hrm_client import HRMClient, HRMClientError
 
 __all__ = [
     "AIEngine",
@@ -18,5 +19,7 @@ __all__ = [
     "SearchTool",
     "ConfigManager",
     "BilingualProcessor",
-    "PersonalityEngine"
+    "PersonalityEngine",
+    "HRMClient",
+    "HRMClientError",
 ]
