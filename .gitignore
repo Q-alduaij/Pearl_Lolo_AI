@@ -1,15 +1,10 @@
-# Pearl Lolo AI Agent ignores
+.venv/
 __pycache__/
 *.py[cod]
-*.log
-logs/
-.external/
-external/
-.env
-.venv/
-venv/
-.envrc
-.DS_Store
-.idea/
-.vscode/
-*.egg-info/
+dist/
+build/
+*.spec
+.env.local
+.lolo/
+.pytest_cache/
+.mypy_cache/
