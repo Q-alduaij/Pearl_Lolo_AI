@@ -27,7 +27,8 @@ class HrmCfg(BaseModel):
     health_path: str = "/health"
     solve_path: str = "/solve"
     timeout_s: float = 20.0
-    enforce_fenced_block: bool = False
+    default_task: str = "auto"
+    default_strategy: str | None = None
 
 
 class ApiCfg(BaseModel):

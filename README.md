@@ -13,21 +13,13 @@ python scripts/run_desktop.py              # launches UI (spawns backend if need
 
 HRM best practice
 
-Use fenced blocks:
-
-```
-530070000
-600195000
-098000060
-800060003
-400803001
-700020006
-060000280
-000419005
-000080079
-```
-
-Set hrm.enforce_fenced_block: true to require blocks.
+- Use the **solve** intent for structured reasoning and planning tasks.
+- Provide context, constraints, and desired outputs in natural language; the provider
+  sends the full conversation to the HRM microservice for hierarchical planning.
+- Pass optional knobs in `params`, e.g. `{ "hrm_task": "plan" }` or `{ "strategy": "cot" }` to
+  steer the upstream service.
+- Configure defaults in `config/config.yaml` under the `hrm` section if you want a preferred
+  `default_task` or `default_strategy` applied automatically.
 
 Notes
 • All data/logs in ~/.lolo/

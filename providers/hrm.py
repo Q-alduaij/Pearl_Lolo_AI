@@ -1,24 +1,75 @@
-import re
+"""HRM provider that forwards Pearl LoLo tasks to the Sapient HRM service."""
+
+from __future__ import annotations
+
+import json
 import time
+from typing import Any, Dict, Iterable
+
 import httpx
-from core.contracts import Provider, Capability, Task, ProviderResult, Health, Usage
-from core.settings import load_settings
-from core.logs import log
-from core.utils import retry
-from core.sudoku import pretty, is_valid_sudoku
+
 from core.cache import get as cache_get, set_ as cache_set
+from core.contracts import Capability, Health, Provider, ProviderResult, Task, Usage
+from core.logs import log
+from core.settings import load_settings
+from core.utils import retry
 
 SETTINGS = load_settings()
-SUDOKU_BLOCK = re.compile(r"```sudoku\s+([\s\S]*?)```", re.IGNORECASE)
 
 
-def _extract_sudoku_block(text: str) -> str | None:
-    match = SUDOKU_BLOCK.search(text)
-    if not match:
-        return None
-    raw = "".join(ch for ch in match.group(1) if ch.isdigit() or ch in ".0")
-    digits = "".join("0" if ch == "." else ch for ch in raw if ch.isdigit() or ch == "0")
-    return digits if len(digits) == 81 else None
+def _flatten_messages(task: Task) -> str:
+    """Render the conversational history into a single prompt string."""
+
+    parts = []
+    for msg in task.messages:
+        role = msg.role.capitalize()
+        content = msg.content.strip()
+        parts.append(f"[{role}] {content}")
+    return "\n\n".join(parts)
+
+
+def _format_iterable(items: Iterable[Any]) -> str:
+    lines = []
+    for item in items:
+        if isinstance(item, dict):
+            lines.append("- " + json.dumps(item, ensure_ascii=False))
+        else:
+            lines.append(f"- {item}")
+    return "\n".join(lines)
+
+
+def _summarise_payload(data: Dict[str, Any]) -> str:
+    """Create a human readable markdown summary of HRM response payloads."""
+
+    sections: list[str] = []
+    preferred_text_fields = [
+        "answer",
+        "final_answer",
+        "solution",
+        "response",
+        "output",
+        "text",
+    ]
+
+    for field in preferred_text_fields:
+        value = data.get(field)
+        if isinstance(value, str) and value.strip():
+            sections.append(f"**{field.replace('_', ' ').title()}**\n{value.strip()}")
+
+    if isinstance(data.get("steps"), list) and data["steps"]:
+        sections.append("**Steps**\n" + _format_iterable(data["steps"]))
+
+    if isinstance(data.get("plan"), list) and data["plan"]:
+        sections.append("**Plan**\n" + _format_iterable(data["plan"]))
+
+    if isinstance(data.get("insights"), list) and data["insights"]:
+        sections.append("**Insights**\n" + _format_iterable(data["insights"]))
+
+    if not sections:
+        pretty = json.dumps(data, ensure_ascii=False, indent=2)
+        sections.append(f"```json\n{pretty}\n```")
+
+    return "\n\n".join(sections)
 
 
 class HrmProvider(Provider):
@@ -40,50 +91,34 @@ class HrmProvider(Provider):
 
     def invoke(self, task: Task) -> ProviderResult:
         start = time.time()
-        prompt = task.messages[-1].content
-        block = _extract_sudoku_block(prompt)
 
-        if SETTINGS.hrm.enforce_fenced_block and not block:
-            return ProviderResult(
-                ok=False,
-                text="Include a fenced ```sudoku``` block.",
-                warnings=["no_fenced_block"],
-            )
-        if block and not is_valid_sudoku(block):
-            return ProviderResult(
-                ok=False,
-                text="Malformed Sudoku (duplicates/length).",
-                warnings=["invalid_sudoku"],
-            )
+        prompt = _flatten_messages(task)
+        hrm_task = str(task.params.get("hrm_task", SETTINGS.hrm.default_task))
+        strategy = task.params.get("strategy", SETTINGS.hrm.default_strategy)
+        payload: Dict[str, Any] = {
+            "prompt": prompt,
+            "task": hrm_task,
+            "metadata": {
+                "locale": task.locale,
+                "tz": task.tz,
+                "tags": task.user_tags,
+            },
+        }
 
-        cache_key = f"hrm:{block or prompt}"
+        if isinstance(strategy, str) and strategy:
+            payload["strategy"] = strategy
+
+        cache_key = f"hrm:{json.dumps(payload, ensure_ascii=False, sort_keys=True)}"
         cached = cache_get(cache_key)
         if cached:
-            text = "# HRM Solution (cache)\n"
-            if (
-                "solution" in cached
-                and isinstance(cached["solution"], str)
-                and len(cached["solution"]) == 81
-            ):
-                text += f"\n```text\n{pretty(cached['solution'])}\n```\n"
-            if "steps" in cached:
-                steps = cached["steps"]
-                text += "\n**Steps**\n" + (
-                    "\n".join(f"- {step}" for step in steps)
-                    if isinstance(steps, list)
-                    else str(steps)
-                )
+            usage = Usage(latency_ms=int((time.time() - start) * 1000))
             return ProviderResult(
                 ok=True,
-                text=text,
+                text="# HRM Result (cached)\n\n" + _summarise_payload(cached),
                 data=cached,
                 warnings=["cached"],
-                usage=Usage(latency_ms=int((time.time() - start) * 1000)),
+                usage=usage,
             )
-
-        payload = {"prompt": prompt, "task": "auto"}
-        if block:
-            payload["grid"] = block
 
         try:
             def call():
@@ -94,23 +129,14 @@ class HrmProvider(Provider):
             response.raise_for_status()
             data = response.json()
             cache_set(cache_key, data)
-            text = "# HRM Solution\n"
-            if (
-                "solution" in data
-                and isinstance(data["solution"], str)
-                and len(data["solution"]) == 81
-            ):
-                text += f"\n```text\n{pretty(data['solution'])}\n```\n"
-            if "steps" in data:
-                steps = data["steps"]
-                text += "\n**Steps**\n" + (
-                    "\n".join(f"- {step}" for step in steps)
-                    if isinstance(steps, list)
-                    else str(steps)
-                )
-            warnings = [] if block else ["No fenced ```sudoku``` block; auto-mode."]
+
             usage = Usage(latency_ms=int((time.time() - start) * 1000))
-            log("hrm.invoke", has_block=bool(block), latency_ms=usage.latency_ms)
-            return ProviderResult(ok=True, text=text, data=data, warnings=warnings, usage=usage)
-        except Exception as exc:  # noqa: BLE001
-            return ProviderResult(ok=False, text="", warnings=[f"HRM failed: {exc}"])
+            log("hrm.invoke", task=hrm_task, latency_ms=usage.latency_ms)
+            return ProviderResult(
+                ok=True,
+                text="# HRM Result\n\n" + _summarise_payload(data),
+                data=data,
+                usage=usage,
+            )
+        except Exception as exc:  # noqa: BLE001, pragma: no cover - network failure surface
+            return ProviderResult(ok=False, text="HRM request failed.", warnings=[str(exc)])

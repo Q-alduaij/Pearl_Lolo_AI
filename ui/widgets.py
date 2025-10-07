@@ -21,9 +21,13 @@ TEMPLATES = {
         "params": {"k": 7, "compose": True},
         "prefix": "Fact-check the following claim. Cite sources:\n",
     },
-    "HRM Solve (Sudoku)": {
+    "HRM Planner": {
         "intent": "solve",
-        "prefix": "Solve this Sudoku:\n\n```sudoku\n530070000\n600195000\n098000060\n800060003\n400803001\n700020006\n060000280\n000419005\n000080079\n```\n",
+        "params": {"hrm_task": "plan"},
+        "prefix": (
+            "Break down this request into actionable steps, call out assumptions, and propose "
+            "what to execute next:\n\n- Objective: Improve LoLo onboarding\n- Constraints: keep offline-first"
+        ),
     },
 }
 

@@ -14,7 +14,8 @@ hrm:
   health_path: "/health"
   solve_path: "/solve"
   timeout_s: 20.0
-  enforce_fenced_block: false
+  default_task: "auto"
+  default_strategy: null
 search:
   enabled: false
   provider: "tavily"
