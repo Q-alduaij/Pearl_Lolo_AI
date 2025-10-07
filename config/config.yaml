@@ -1,0 +1,25 @@
+api: { host: "127.0.0.1", port: 8777 }
+llm:
+  url: "http://127.0.0.1:11434"
+  primary_model: "qwen2.5:14b"
+  fallback_model: "qwen2.5:7b"
+  timeout_s: 60.0
+rag:
+  persist_dir: "~/.lolo/rag"
+  collection: "main"
+  k: 5
+  bm25_min_docs: 20
+hrm:
+  url: "http://127.0.0.1:8008"
+  health_path: "/health"
+  solve_path: "/solve"
+  timeout_s: 20.0
+  default_task: "auto"
+  default_strategy: null
+search:
+  enabled: false
+  provider: "tavily"
+  max_results: 5
+  timeout_s: 12.0
+llm_mode:
+  mode: "local"

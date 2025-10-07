@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+dist/
+build/
+*.spec
+.env.local
+.lolo/
+.pytest_cache/
+.mypy_cache/
