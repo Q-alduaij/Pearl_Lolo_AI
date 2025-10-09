@@ -1,0 +1,52 @@
+rules:
+  - id: axios-timeout-required
+    message: "Axios requests must set an explicit timeout (policy forbids default 0)."
+    severity: ERROR
+    languages: [javascript, typescript]
+    patterns:
+      - pattern-either:
+          - pattern: axios.$METHOD($URL, $DATA, {...})
+          - pattern: axios.$METHOD($URL, {...})
+          - pattern: $CLIENT.request({...})
+    metavariable-regex:
+      $METHOD: "get|post|put|patch|delete|options|head"
+    pattern-not:
+      pattern: |
+        {..., timeout: $T, ...}
+
+  - id: axios-global-client-mutation
+    message: "Avoid mutating axios global defaults; use axios.create(...) for scoped clients."
+    severity: WARNING
+    languages: [javascript, typescript]
+    pattern: axios.defaults.$PROP = $VAL
+
+  - id: axios-retry-on-non-idempotent
+    message: "Do not retry non-idempotent methods (POST/PATCH) unless explicitly justified."
+    severity: WARNING
+    languages: [javascript, typescript]
+    patterns:
+      - pattern: |
+          axios.$METHOD($URL, ...)
+      - metavariable-regex:
+          $METHOD: "post|patch"
+      - pattern-inside: |
+          try {
+            ...
+          } catch ($E) {
+            ...
+            axios.$METHOD($URL, ...)
+          }
+
+  - id: no-unsafe-eval
+    message: "Avoid eval/Function constructor on untrusted input."
+    severity: ERROR
+    languages: [javascript, typescript]
+    pattern-either:
+      - pattern: eval($X)
+      - pattern: new Function($ARGS, $BODY)
+
+  - id: http-timeout-on-fetch-too
+    message: "Native fetch must use AbortSignal timeout or equivalent."
+    severity: WARNING
+    languages: [javascript, typescript]
+    pattern: fetch($URL)
