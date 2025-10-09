@@ -5,24 +5,30 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
 jobs:
   semgrep:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          config: .semgrep/axios-guardrails.yml
-          generateSarif: true
-        env:
-          # Optional: only if you use the Semgrep App. Not required for PR annotations.
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+          python-version: "3.x"
+
+      - name: Install Semgrep CLI
+        run: pip install semgrep
+
+      - name: Run Semgrep with local policy
+        run: |
+          semgrep ci \
+            --config .semgrep/axios-guardrails.yml \
+            --sarif --output semgrep.sarif
 
       - name: Upload SARIF to GitHub Code Scanning
         if: always()
